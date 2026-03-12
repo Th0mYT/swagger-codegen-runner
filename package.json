@@ -1,6 +1,6 @@
 {
   "name": "swagger-codegen-runner",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A fully-typed TypeScript runner for swagger-codegen-cli v3. Supports all generators (API clients, server stubs, documentation) with per-generator IntelliSense for additionalProperties.",
   "keywords": [
     "swagger",
@@ -63,14 +63,39 @@
   },
   "standard-version": {
     "types": [
-      { "type": "feat",     "section": "Features" },
-      { "type": "fix",      "section": "Bug Fixes" },
-      { "type": "perf",     "section": "Performance" },
-      { "type": "refactor", "section": "Refactoring" },
-      { "type": "docs",     "section": "Documentation", "hidden": false },
-      { "type": "chore",    "hidden": true },
-      { "type": "style",    "hidden": true },
-      { "type": "test",     "hidden": true }
+      {
+        "type": "feat",
+        "section": "Features"
+      },
+      {
+        "type": "fix",
+        "section": "Bug Fixes"
+      },
+      {
+        "type": "perf",
+        "section": "Performance"
+      },
+      {
+        "type": "refactor",
+        "section": "Refactoring"
+      },
+      {
+        "type": "docs",
+        "section": "Documentation",
+        "hidden": false
+      },
+      {
+        "type": "chore",
+        "hidden": true
+      },
+      {
+        "type": "style",
+        "hidden": true
+      },
+      {
+        "type": "test",
+        "hidden": true
+      }
     ]
   }
 }
