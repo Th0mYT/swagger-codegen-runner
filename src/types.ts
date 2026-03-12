@@ -510,6 +510,40 @@ export interface DownloadSpecConfig {
   required?: boolean;
 }
 
+/**
+ * A single copy rule that maps a sub-directory of the codegen output to a
+ * destination inside `projectDir`.
+ *
+ * @example
+ * // Copy only the generated models into src/app/shared/dto
+ * { sourceSubPath: "model", destinationRelativePath: "src/app/shared/dto" }
+ *
+ * @example
+ * // Copy the generated API services into a separate folder
+ * { sourceSubPath: "api", destinationRelativePath: "src/app/services/api" }
+ */
+export interface CopyRule {
+  /**
+   * Subdirectory inside the generated output to copy from.
+   * When omitted the entire generated output directory is copied.
+   * @example "model"
+   * @example "api"
+   */
+  sourceSubPath?: string;
+
+  /**
+   * Relative path inside `projectDir` to copy into.
+   * @example "src/app/shared/dto"
+   */
+  destinationRelativePath: string;
+
+  /**
+   * When `true`, empties this destination before copying.
+   * Falls back to `Config.cleanDestinationBeforeCopy` when omitted.
+   */
+  cleanDestinationBeforeCopy?: boolean;
+}
+
 export interface Config {
   /**
    * Absolute path to the swagger-codegen repository root (where the JAR lives).
@@ -527,6 +561,10 @@ export interface Config {
   /**
    * Relative path inside `projectDir` where the generated output is copied.
    * The runner copies the entire codegen output directory to this location.
+   *
+   * Use `copyRules` instead when you need granular control over which
+   * sub-directories are copied and where they land.
+   *
    * @example "src/app/shared/dto"   (Angular DTOs)
    * @example "src/generated"        (generic)
    * @example "docs/api"             (documentation)
@@ -534,7 +572,22 @@ export interface Config {
   outputDestinationRelativePath?: string;
 
   /**
+   * Granular copy rules. Each rule maps a sub-directory of the generated output
+   * to a destination inside `projectDir`.
+   *
+   * When set, `copyRules` takes precedence over `outputDestinationRelativePath`.
+   *
+   * @example
+   * copyRules: [
+   *   { sourceSubPath: "model", destinationRelativePath: "src/app/shared/dto" },
+   *   { sourceSubPath: "api",   destinationRelativePath: "src/app/services/api" },
+   * ]
+   */
+  copyRules?: CopyRule[];
+
+  /**
    * When `true`, empties the destination folder before copying new files.
+   * Can be overridden per rule via `CopyRule.cleanDestinationBeforeCopy`.
    * @default true
    */
   cleanDestinationBeforeCopy?: boolean;

@@ -122,6 +122,75 @@ describe("copyOutput", () => {
       { recursive: true }
     );
   });
+
+  it("skips copy when neither outputDestinationRelativePath nor copyRules is set", () => {
+    const cfg = makeConfig({ outputDestinationRelativePath: undefined });
+    copyOutput(cfg, "/tools/swagger-codegen/samples/client/output");
+    expect(fs.cpSync).not.toHaveBeenCalled();
+  });
+
+  it("applies copyRules instead of outputDestinationRelativePath when both are set", () => {
+    mockReaddir.mockReturnValue(["Pet.ts", "User.ts"]);
+    const cfg = makeConfig({
+      outputDestinationRelativePath: "src/generated",
+      copyRules: [
+        { sourceSubPath: "model", destinationRelativePath: "src/app/shared/dto" },
+      ],
+    });
+    copyOutput(cfg, "/tools/swagger-codegen/samples/client/output");
+
+    expect(fs.cpSync).toHaveBeenCalledWith(
+      path.join("/tools/swagger-codegen/samples/client/output", "model", "Pet.ts"),
+      path.join("/projects/my-app/src/app/shared/dto", "Pet.ts"),
+      { recursive: true }
+    );
+    // outputDestinationRelativePath should be ignored
+    expect(fs.cpSync).not.toHaveBeenCalledWith(
+      expect.stringContaining("src/generated"),
+      expect.anything(),
+      expect.anything()
+    );
+  });
+
+  it("applies multiple copyRules independently", () => {
+    mockReaddir.mockReturnValue(["index.ts"]);
+    const generatedDir = "/tools/swagger-codegen/samples/client/output";
+    const cfg = makeConfig({
+      outputDestinationRelativePath: undefined,
+      copyRules: [
+        { sourceSubPath: "model", destinationRelativePath: "src/app/shared/dto" },
+        { sourceSubPath: "api",   destinationRelativePath: "src/app/services/api" },
+      ],
+    });
+    copyOutput(cfg, generatedDir);
+
+    expect(fs.cpSync).toHaveBeenCalledWith(
+      path.join(generatedDir, "model", "index.ts"),
+      path.join("/projects/my-app/src/app/shared/dto", "index.ts"),
+      { recursive: true }
+    );
+    expect(fs.cpSync).toHaveBeenCalledWith(
+      path.join(generatedDir, "api", "index.ts"),
+      path.join("/projects/my-app/src/app/services/api", "index.ts"),
+      { recursive: true }
+    );
+  });
+
+  it("copies the entire generated output when sourceSubPath is omitted in a copyRule", () => {
+    mockReaddir.mockReturnValue(["model", "api"]);
+    const generatedDir = "/tools/swagger-codegen/samples/client/output";
+    const cfg = makeConfig({
+      outputDestinationRelativePath: undefined,
+      copyRules: [{ destinationRelativePath: "src/generated" }],
+    });
+    copyOutput(cfg, generatedDir);
+
+    expect(fs.cpSync).toHaveBeenCalledWith(
+      path.join(generatedDir, "model"),
+      path.join("/projects/my-app/src/generated", "model"),
+      { recursive: true }
+    );
+  });
 });
 
 // ─── Type narrowing (compile-time checks, not runtime) ───────────────────────

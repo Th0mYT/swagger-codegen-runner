@@ -8,7 +8,7 @@ import { execSync, spawnSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import { log, errorExit } from "./logger";
-import type { Config, BaseGenerateOptions } from "./types";
+import type { Config, CopyRule, BaseGenerateOptions } from "./types";
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 
@@ -55,7 +55,14 @@ export function validateDirectories(cfg: Config): void {
     errorExit(`Project directory not found: ${cfg.projectDir}`);
   }
 
-  if (cfg.outputDestinationRelativePath) {
+  if (cfg.copyRules) {
+    for (const rule of cfg.copyRules) {
+      const dest = path.join(cfg.projectDir, rule.destinationRelativePath);
+      if (!fs.existsSync(dest)) {
+        errorExit(`Copy rule destination not found: ${dest}`);
+      }
+    }
+  } else if (cfg.outputDestinationRelativePath) {
     const dest = path.join(cfg.projectDir, cfg.outputDestinationRelativePath);
     if (!fs.existsSync(dest)) {
       errorExit(`Output destination directory not found: ${dest}`);
@@ -175,33 +182,55 @@ export function generateClient(cfg: Config): string {
 // ─── Output copy ──────────────────────────────────────────────────────────────
 
 /**
- * Copies the contents of `generatedDir` to the configured destination inside
- * `cfg.projectDir`. Skips the copy if `outputDestinationRelativePath` is unset.
+ * Copies the contents of `generatedDir` to the configured destination(s) inside
+ * `cfg.projectDir`.
+ *
+ * When `cfg.copyRules` is set each rule is applied independently, allowing
+ * different sub-directories of the generated output to be copied to different
+ * destinations. Otherwise falls back to `cfg.outputDestinationRelativePath`,
+ * which copies the entire output directory to a single destination.
  */
 export function copyOutput(cfg: Config, generatedDir: string): void {
-  if (!cfg.outputDestinationRelativePath) {
-    log("outputDestinationRelativePath not set — skipping copy step.");
+  const rules = resolvedCopyRules(cfg);
+
+  if (rules.length === 0) {
+    log("No copy destination configured — skipping copy step.");
     return;
   }
 
-  const destDir = path.join(cfg.projectDir, cfg.outputDestinationRelativePath);
-  const clean   = cfg.cleanDestinationBeforeCopy ?? true;
+  for (const rule of rules) {
+    const srcDir  = rule.sourceSubPath
+      ? path.join(generatedDir, rule.sourceSubPath)
+      : generatedDir;
+    const destDir = path.join(cfg.projectDir, rule.destinationRelativePath);
+    const clean   = rule.cleanDestinationBeforeCopy ?? cfg.cleanDestinationBeforeCopy ?? true;
 
-  if (clean) {
-    log(`Cleaning destination: ${destDir}`);
-    for (const file of fs.readdirSync(destDir)) {
-      fs.rmSync(path.join(destDir, file), { recursive: true, force: true });
+    if (clean) {
+      log(`Cleaning destination: ${destDir}`);
+      for (const file of fs.readdirSync(destDir)) {
+        fs.rmSync(path.join(destDir, file), { recursive: true, force: true });
+      }
     }
-  }
 
-  log(`Copying output to: ${destDir}`);
-  for (const file of fs.readdirSync(generatedDir)) {
-    fs.cpSync(
-      path.join(generatedDir, file),
-      path.join(destDir, file),
-      { recursive: true }
-    );
-  }
+    log(`Copying${rule.sourceSubPath ? ` "${rule.sourceSubPath}"` : ""} to: ${destDir}`);
+    for (const file of fs.readdirSync(srcDir)) {
+      fs.cpSync(
+        path.join(srcDir, file),
+        path.join(destDir, file),
+        { recursive: true }
+      );
+    }
 
-  log(`Output copied to: ${destDir}`);
+    log(`Output copied to: ${destDir}`);
+  }
+}
+
+function resolvedCopyRules(cfg: Config): CopyRule[] {
+  if (cfg.copyRules && cfg.copyRules.length > 0) {
+    return cfg.copyRules;
+  }
+  if (cfg.outputDestinationRelativePath) {
+    return [{ destinationRelativePath: cfg.outputDestinationRelativePath }];
+  }
+  return [];
 }
