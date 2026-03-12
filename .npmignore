@@ -1,0 +1,20 @@
+# Source & test files — not needed by consumers
+src/
+test/
+examples/
+coverage/
+samples/
+
+# Config files
+.eslintrc.json
+.gitignore
+jest.config.js
+tsconfig.json
+.github/
+.idea/
+.vscode/
+
+# Misc
+.DS_Store
+*.log
+swagger.json
