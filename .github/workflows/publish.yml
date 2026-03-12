@@ -30,5 +30,23 @@ jobs:
       - name: Build & test
         run: npm run prepublishOnly
 
-      - name: Publish
+      - name: Check if package exists on npm
+        id: pkg_exists
+        run: |
+          if npm view swagger-codegen-runner version &>/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish (first release — no provenance)
+        if: steps.pkg_exists.outputs.exists == 'false'
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish (with provenance)
+        if: steps.pkg_exists.outputs.exists == 'true'
         run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
