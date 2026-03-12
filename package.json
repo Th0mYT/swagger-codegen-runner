@@ -1,0 +1,76 @@
+{
+  "name": "swagger-codegen-runner",
+  "version": "1.0.0",
+  "description": "A fully-typed TypeScript runner for swagger-codegen-cli v3. Supports all generators (API clients, server stubs, documentation) with per-generator IntelliSense for additionalProperties.",
+  "keywords": [
+    "swagger",
+    "openapi",
+    "codegen",
+    "swagger-codegen",
+    "typescript",
+    "angular",
+    "axios",
+    "api-client",
+    "code-generation"
+  ],
+  "author": "Tommaso",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/swagger-codegen-runner.git"
+  },
+  "bugs": {
+    "url": "https://github.com/YOUR_USERNAME/swagger-codegen-runner/issues"
+  },
+  "homepage": "https://github.com/YOUR_USERNAME/swagger-codegen-runner#readme",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=16.7.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "typecheck": "tsc --noEmit",
+    "release": "standard-version",
+    "release:minor": "standard-version --release-as minor",
+    "release:major": "standard-version --release-as major",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.14.0",
+    "@typescript-eslint/eslint-plugin": "^7.13.0",
+    "@typescript-eslint/parser": "^7.13.0",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "standard-version": "^9.5.0",
+    "ts-jest": "^29.1.5",
+    "typescript": "^5.5.2"
+  },
+  "standard-version": {
+    "types": [
+      { "type": "feat",     "section": "Features" },
+      { "type": "fix",      "section": "Bug Fixes" },
+      { "type": "perf",     "section": "Performance" },
+      { "type": "refactor", "section": "Refactoring" },
+      { "type": "docs",     "section": "Documentation", "hidden": false },
+      { "type": "chore",    "hidden": true },
+      { "type": "style",    "hidden": true },
+      { "type": "test",     "hidden": true }
+    ]
+  }
+}
