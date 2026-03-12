@@ -1,13 +1,14 @@
 # swagger-codegen-runner
 
 [![npm version](https://img.shields.io/npm/v/swagger-codegen-runner)](https://www.npmjs.com/package/swagger-codegen-runner)
-[![CI](https://github.com/YOUR_USERNAME/swagger-codegen-runner/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/swagger-codegen-runner/actions/workflows/ci.yml)
+[![CI](https://github.com/Th0mYT/swagger-codegen-runner/actions/workflows/ci.yml/badge.svg)](https://github.com/Th0mYT/swagger-codegen-runner/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A fully-typed TypeScript library for running **swagger-codegen-cli v3**.
 
 - ✅ Supports all generators — API clients, server stubs, documentation
 - ✅ Full **IntelliSense** for `additionalProperties` — each generator has its own typed interface
+- ✅ **Granular copy rules** — copy specific sub-directories of the output to different destinations
 - ✅ Optional **spec download** from a local or remote server before codegen
 - ✅ Works with **Docker** or a local **Java** installation
 - ✅ Zero runtime dependencies — only Node.js built-ins
@@ -71,12 +72,40 @@ await run(config);
 |---|---|---|---|
 | `swaggerCodegenDir` | `string` | **required** | Absolute path to the swagger-codegen repo root (JAR location). Not needed in Docker mode. |
 | `projectDir` | `string` | **required** | Absolute path to the destination project root. |
-| `outputDestinationRelativePath` | `string` | `undefined` | Relative path inside `projectDir` where the output is copied. Skips copy if omitted. |
-| `cleanDestinationBeforeCopy` | `boolean` | `true` | Empty the destination folder before copying new files. |
+| `outputDestinationRelativePath` | `string` | `undefined` | Relative path inside `projectDir` where the entire output is copied. Skips copy if omitted. Ignored when `copyRules` is set. |
+| `copyRules` | [`CopyRule[]`](#copyrule) | `undefined` | Granular copy rules. Takes precedence over `outputDestinationRelativePath`. |
+| `cleanDestinationBeforeCopy` | `boolean` | `true` | Empty the destination folder(s) before copying. Can be overridden per rule. |
 | `useDocker` | `boolean` | `false` | Run via Docker instead of local Java. |
 | `dockerImage` | `string` | `swaggerapi/swagger-codegen-cli-v3:latest` | Docker image to use. |
 | `downloadSpec` | [`DownloadSpecConfig`](#downloadspecconfig) | `undefined` | Download the spec before codegen. |
 | `generate` | [`CodegenGenerateOptions`](#codegengenerateoptions) | **required** | Options forwarded to the `generate` command. |
+
+### `CopyRule`
+
+Each rule copies a specific sub-directory of the generated output to a destination inside `projectDir`. Useful when you only want a subset of the output (e.g. just `model/`) or want to scatter different parts into separate locations.
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `sourceSubPath` | `string` | `undefined` | Sub-directory inside the generated output to copy from. Copies the entire output when omitted. |
+| `destinationRelativePath` | `string` | **required** | Relative path inside `projectDir` to copy into. |
+| `cleanDestinationBeforeCopy` | `boolean` | *(inherits)* | Override the top-level `cleanDestinationBeforeCopy` for this rule only. |
+
+**Example — copy only models:**
+
+```typescript
+copyRules: [
+  { sourceSubPath: "model", destinationRelativePath: "src/app/shared/dto" },
+]
+```
+
+**Example — split models and API services into separate folders:**
+
+```typescript
+copyRules: [
+  { sourceSubPath: "model", destinationRelativePath: "src/app/shared/dto" },
+  { sourceSubPath: "api",   destinationRelativePath: "src/app/services/api" },
+]
+```
 
 ### `DownloadSpecConfig`
 
@@ -352,7 +381,7 @@ git push --follow-tags origin main
 
 ## Contributing
 
-Contributions are welcome. Please open an issue or PR on [GitHub](https://github.com/YOUR_USERNAME/swagger-codegen-runner).
+Contributions are welcome. Please open an issue or PR on [GitHub](https://github.com/Th0mYT/swagger-codegen-runner).
 
 Commit messages must follow [Conventional Commits](https://www.conventionalcommits.org/):
 
