@@ -59,10 +59,10 @@ export async function run(config: Config): Promise<void> {
       config.generate.inputSpec = localPath;
     } catch (err) {
       if (required) {
-        errorExit(`Failed to download spec: ${err}`);
+        errorExit(`Failed to download spec: ${String(err)}`);
       } else {
         warn(
-          `Could not download spec (${err}). ` +
+          `Could not download spec (${String(err)}). ` +
           `Falling back to inputSpec: ${config.generate.inputSpec}`
         );
       }
