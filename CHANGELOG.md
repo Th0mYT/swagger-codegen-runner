@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0](https://github.com/Th0mYT/swagger-codegen-runner/compare/v1.0.2...v1.1.0) (2026-05-13)
+
+
+### Features
+
+* **runner:** remove self-imports from generated TypeScript models ([e6400ef](https://github.com/Th0mYT/swagger-codegen-runner/commit/e6400ef7b1f39cd65cba7c799f23ae10bcfe6b2b))
+
 ### [1.0.2](https://github.com/Th0mYT/swagger-codegen-runner/compare/v1.0.1...v1.0.2) (2026-03-12)
 
 
