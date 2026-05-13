@@ -179,6 +179,47 @@ export function generateClient(cfg: Config): string {
   return outputDir;
 }
 
+// ─── Post-processing ──────────────────────────────────────────────────────────
+
+/**
+ * Removes self-imports from generated TypeScript model files.
+ *
+ * swagger-codegen-cli emits an `import { X } from './x'` inside the file that
+ * defines X itself when X has a self-referential property (e.g. a recursive
+ * tree node). TypeScript rejects this with TS2440. This function scans every
+ * .ts file in `dir` and strips any import whose resolved basename matches the
+ * containing file's own basename.
+ */
+export function removeSelfImports(dir: string): void {
+  for (const filePath of walkTs(dir)) {
+    const content = fs.readFileSync(filePath, "utf8");
+    const fileBasename = path.basename(filePath, ".ts").toLowerCase();
+
+    const lines = content.split("\n");
+    const filtered = lines.filter((line) => {
+      const match = line.match(/^\s*import\s+.+\s+from\s+['"]([^'"]+)['"]/);
+      if (!match) return true;
+      const importBasename = path.basename(match[1], ".ts").toLowerCase();
+      return importBasename !== fileBasename;
+    });
+
+    if (filtered.length !== lines.length) {
+      fs.writeFileSync(filePath, filtered.join("\n"), "utf8");
+      log(`Removed self-import in: ${path.relative(dir, filePath)}`);
+    }
+  }
+}
+
+function walkTs(dir: string): string[] {
+  const results: string[] = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) results.push(...walkTs(full));
+    else if (entry.isFile() && entry.name.endsWith(".ts")) results.push(full);
+  }
+  return results;
+}
+
 // ─── Output copy ──────────────────────────────────────────────────────────────
 
 /**

@@ -24,7 +24,7 @@
 export * from "./types";
 
 import { downloadSpec } from "./downloader";
-import { validateDirectories, checkRuntime, generateClient, copyOutput } from "./runner";
+import { validateDirectories, checkRuntime, generateClient, removeSelfImports, copyOutput } from "./runner";
 import { log, warn, errorExit } from "./logger";
 import type { Config } from "./types";
 
@@ -69,8 +69,9 @@ export async function run(config: Config): Promise<void> {
     }
   }
 
-  // ── Generate & copy ─────────────────────────────────────────────────────────
+  // ── Generate, post-process & copy ───────────────────────────────────────────
   const generatedDir = generateClient(config);
+  removeSelfImports(generatedDir);
   copyOutput(config, generatedDir);
 
   log("swagger-codegen-runner done.");
